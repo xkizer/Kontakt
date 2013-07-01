@@ -1,0 +1,69 @@
+PROJECT NOTES
+
+Users, groups, contacts, and all other entities are treated as objects, and
+each object is indexed in the "objects" collection. Each type of object has its
+own pattern for the IDs, listed below.
+
+Users: IDs start with "21" and are numerical
+Contacts: IDs start with "E0." and end with "_9x"
+Groups:
+    Public groups have IDs that start with "PX." and end with "_QN"
+    Private groups have IDs that start with "32." and end with "_ZZ"
+
+Public groups have three security leaves:
+    Open - Group is searchable and non-members can ask to join (or outrightly join)
+    Closed - Group is not searchable. Users must be invited.
+
+
+The user owns his/her private groups, and can only add people in his/her contacts
+to the group. The group is just a way for the user to organize their contacts.
+
+The user can share other people's contact information with other users (information
+will be saved as static, and will not be updated when the contact information changes)
+
+The same way, a user can share a private group with another user (or with a group).
+Information shared with a group is shared with all members of the group. The shared
+information is only static, and is not updated automatically.
+
+Every single piece of information is stored in the database as a fully contained
+information (no linkages, etc). For example, if A shares their contact information
+with B, a copy of A's contact information is stored in B's contacts list. When A
+updates their contact information, an index mapping who shared what with who will
+show that A is sharing information with B. The system will rebuild the contact
+information for B and replace the old contact information.
+
+If B shares A's contact information with C, another copy of the contact information
+(a snapshot) is created for C. This information does not have any linkage back to
+A (it is static information), so when A updates their contact information, C's
+copy is not rebuilt.
+
+The only place where linkages are allowed is in private groups. Here, we do not
+create a copy of each contact for the group.
+
+When a user joins a public group, they choose what information to share with the
+group. A copy of the user's contact information is created for the group, with an
+index linking the user to the contact. When the user updates their contact information,
+the linkage tells the system to rebuild the user's contact information for the group.
+
+Members of a public group can view each other's contact information, depending on
+what each member decides to share. Group members can also set permissions on what
+the group can do and what the group cannot do (e.g. send him SMS, Email, etc).
+
+A group admin can choose the minimum required information for joining the group.
+For example, a peer messaging group admin can stipulate that all members must 
+provide SMS permission to the group before joining. Or that all members must 
+provide their emails before joining.
+
+The group leaders can also choose what users are not allowed to share. For example,
+group leaders can ban users from sharing their phone numbers with the group. In
+such case, the users will not be prevented from sharing their phone numbers, but
+other group members will not be able to view them (this help preserve users' settings
+in a case where the group settings changed after the user has shared the said information).
+
+There MUST be at least one admin in a group. The last admin is not allowed to leave
+the group until he/she assigns another admin. If in any case the last admin leaves,
+the top 10 members of the group (by contribution) are provided to the other members
+for election (the group remains inaccessible until the poll is complete). The two
+members with the highest votes win. (PLEASE REVIEW THIS PROCESS)
+
+

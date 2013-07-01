@@ -6,7 +6,7 @@ function Contact (contactId) {
 
 Contact.prototype = {
     toString: function () {
-        return '<User#InvalidUser>';
+        return '<Contact#InvalidContact>';
     }
 };
 
@@ -51,6 +51,29 @@ function contactProto (contact) {
         
         removeFields: function (fields, callback) {
             // Fields is an array
+        },
+        
+        shareContact: function (sharingSetting, callback) {
+            // Note: callback is given an error object and a new Contact object,
+            // representing the newly created copy of the contact. If the user
+            // who is sharing the contact is the same as the owner
+            // (Contact#userId = Contact#owner#userId), we create a linkage
+            // (allowing the shared contact to be updated automatically), if the
+            // user chooses to. Otherwise we ignore the setting altogether.
+        },
+        
+        getSharedFields: function () {
+            // Get all the auto-updated fields (with their values)
+        },
+        
+        getStaticFields: function () {
+            // Get all the fields that the user added manually or has frozen
+        },
+        
+        freezeField: function () {
+            // Convert a field to a static field. This is useful in cases where
+            // you a user is interested only in the contact's current information,
+            // and does not want it overwritten by an update.
         }
     };
 }
