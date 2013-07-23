@@ -50,12 +50,44 @@ module.exports = {
     },
     
     changePassword: function (req, res, next) {
+        if(req.body.resetKey) {
+            // This is a password reset, not change
+            return next();
+        }
+        
         var newPass = req.body.password;
         var oldPass = req.body.oldpassword;
         
         req.requireLogin(function (user) {
-            console.log(user);
             user.changePassword(oldPass, newPass, function (err) {
+                if(err) {
+                    return res.json(err);
+                }
+                
+                res.json({ok: 1});
+            });
+        });
+    },
+    
+    editUser: function (req, res, next) {
+        req.requireLogin(function (user) {
+            user.set(req.body, function (err) {
+                if(err) {
+                    return res.json(err);
+                }
+                
+                res.json({ok: 1});
+            });
+        });
+    },
+    
+    deleteAccount: function (req, res, next) {
+        
+    },
+    
+    getInfo: function (req, res, next) {
+        req.requireLogin(function (user) {
+            user.get(req.body, function (err) {
                 if(err) {
                     return res.json(err);
                 }
@@ -65,3 +97,14 @@ module.exports = {
         });
     }
 };
+
+
+
+
+
+
+
+
+
+
+

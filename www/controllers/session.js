@@ -22,6 +22,8 @@ module.exports = {
      * @param callback The callback receives an optional error object and a token
      */
     createSession: function (details, options, callback) {
+        logger.debug('Creating new session');
+        
         if(!details) {
             // No details provided
             return callback(error(0x290C));

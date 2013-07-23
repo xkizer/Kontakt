@@ -13,7 +13,7 @@ module.exports = {
             sha1    = crypto.createHash('sha256'),
             sha2    = crypto.createHash('sha256');
         
-        sha1.update(password);
+        sha1.update(String(password));
         sha2.update(sha1.digest('hex'));
         sha2.update(String(salt).toLowerCase());
         return sha2.digest('hex');

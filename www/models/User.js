@@ -22,7 +22,6 @@ function User (userId) {
     // Look for the user in the database
     db.mongoConnect({db: 'kontakt', collection: 'users'}, function (err, users, db) {
         if(err) {
-            console.error(err);
             return me.emit(error(0x1210, err));
         }
         
@@ -37,7 +36,6 @@ function User (userId) {
         
         users.findOne(qry, function (err, user) {
             if(err) {
-                console.error(err);
                 return me.emit('error', error(0x1210, err));
             }
             
@@ -61,18 +59,35 @@ function User (userId) {
 function userProto (userInfo) {
     return {
         set: function (prop, value, callback) {
-            // Check if this is a writeable property
-            if(readOnlyProps.indexOf(prop) >= 0) {
-                return callback(error(0x1513));
+            // Check if we have a hash
+            var props = {};
+            
+            if(arguments.length > 2) {
+                props[prop] = value;
+            } else {
+                callback = value;
             }
-
-            // Check if this is valid
-            if('function' === typeof validators[prop]) {
-                var validated = validators[prop].call(this, prop, value);
-
-                if(!validated) {
-                    return callback(error(0x1512));
+            
+            for(var i in prop) {
+                if(!prop.hasOwnProperty(i)) {
+                    continue;
                 }
+
+                // Check if this is a writeable property
+                if(readOnlyProps.indexOf(i) >= 0) {
+                    return callback(error([0x1513, i]));
+                }
+
+                // Check if this is valid
+                if('function' === typeof validators[prop]) {
+                    var validated = validators[prop].call(this, prop, value);
+
+                    if(!validated) {
+                        return callback(error(0x1512));
+                    }
+                }
+                
+                props[i] = prop[i];
             }
 
             var me = this;
@@ -80,21 +95,21 @@ function userProto (userInfo) {
             // Validated
             db.mongoConnect({db: 'kontakt', collection: 'users'}, function (err, users, db) {
                 if(err) {
-                    console.error(err);
                     return callback(error(0x1210, err));
                 }
                 
-                var updt = {};
-                updt[prop] = value;
-
-                users.update({_id: userInfo._id}, {$set: updt}, function (err) {
+                users.update({_id: userInfo._id}, {$set: props}, function (err) {
                     if(err) {
-                        console.error(err);
                         return callback(error(0x1211, err));
                     }
                     
                     // Update object
-                    userInfo[prop] = value;
+                    for(var i in props) {
+                        if(props.hasOwnProperty(i)) {
+                            userInfo[i] = props[i];
+                        }
+                    }
+                    
                     return callback(null);
                 });
             });
@@ -126,7 +141,46 @@ function userProto (userInfo) {
         },
         
         changePassword: function (oldPass, newPass, callback) {
+            logger.debug('Password change requested', oldPass, newPass);
             
+            if(!oldPass) {
+                return callback(error(0x1525));
+            }
+            
+            if(!newPass) {
+                return callback(error(0x1526));
+            }
+            
+            // Check the old password
+            if(!this.validatePassword(oldPass)) {
+                return callback(error(0x1527));
+            }
+            
+            // Validate new password
+            if(('string' !== typeof newPass) || newPass.length < 6) {
+                return callback(error(0x1528));
+            }
+            
+            // Change password
+            logger.debug('Changing password', newPass);
+            
+            db.mongoConnect({db: 'kontakt', collection: 'users'}, function (err, users) {
+                if(err) {
+                    return me.emit(error(0x1210, err));
+                }
+                
+                newPass = util.hash(newPass, userInfo.username);
+                
+                users.update({_id: userInfo._id}, {$set: {password: newPass}}, function (err) {
+                    if(err) {
+                        return callback(error(0x1211, err));
+                    }
+                    
+                    // Update object
+                    userInfo.password = newPass;
+                    return callback(null);
+                });
+            });
         },
         
         toString: function () {

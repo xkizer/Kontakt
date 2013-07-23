@@ -1,7 +1,7 @@
 
 module.exports = {
     addContact: function (userId, contact, callback) {
-        
+        // TODO: Check for the special userId field in the contact object
     },
     
     getContacts: function (userId, query, callback) {
@@ -38,5 +38,11 @@ module.exports = {
     getSharedContact: function (contactId, callback) {
         // Get all the information I am sharing with the user. If contactId is
         // not specified, get information I'm sharing with the public
+    },
+        
+    mergeContacts: function (mergeFrom, mergeInto, callback) {
+        // Note: two shared contacts can't be merged. At least one contact
+        // has to be a static contact (a contact that is no linked to any
+        // account)
     }
 };

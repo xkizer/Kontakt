@@ -51,6 +51,10 @@ function contactProto (contact) {
         
         removeFields: function (fields, callback) {
             // Fields is an array
+            // Note, only fields stored by the user can be removed. Fields
+            // that are being shared will automatically peek through once manually
+            // entered fields are deleted. To remove the shared info, the user
+            // has to edit the share.
         },
         
         shareContact: function (sharingSetting, callback) {
@@ -62,18 +66,44 @@ function contactProto (contact) {
             // user chooses to. Otherwise we ignore the setting altogether.
         },
         
-        getSharedFields: function () {
+        getSharedFields: function (callback) {
             // Get all the auto-updated fields (with their values)
         },
         
-        getStaticFields: function () {
+        getStaticFields: function (callback) {
             // Get all the fields that the user added manually or has frozen
         },
         
-        freezeField: function () {
+        freezeField: function (field, callback) {
             // Convert a field to a static field. This is useful in cases where
             // you a user is interested only in the contact's current information,
-            // and does not want it overwritten by an update.
+            // and does not want it overwritten by an update. The sharing will
+            // remain, but any new update won't reflect
+        },
+        
+        /**
+         * Update the sharing information. Note: only removals can be done. Any
+         * new field will result in a share request being sent.
+         * @param {type} newShare
+         * @param {type} callback
+         * @returns {undefined}
+         */
+        updateShare: function (newShare, callback) {
+            // Update what is shared. The owner of this contact chooses what to
+            // share with this user. This user can then remove what they don't
+            // want. To re-enable the sharing, they will need to request permission.
+        },
+        
+        /**
+         * Request this contact to share certain information
+         * @param {array} fields List of fields to request
+         * @param {string} message (optional) An optional message to convey the 
+         * intent of the user
+         * @param {function} callback
+         */
+        requestSharing: function (fields, message, callback) {
+            // Request this contact to share some information
+            // Works only on shared contacts
         }
     };
 }

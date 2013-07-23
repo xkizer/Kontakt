@@ -8,7 +8,7 @@ module.exports = {
                 username: 'kontakt',
                 password: 'T4Bmj3LcZmvD'
             },
-            collections: ['users']
+            collections: ['users','logs','contacts','messages','groups.private','groups.public']
         }
     }
 };

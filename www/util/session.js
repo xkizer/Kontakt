@@ -11,6 +11,7 @@ function saveSession() {
     var req = this;
 
     if(req.session) {
+        logger.debug('Saving session...', req.sessionId);
         // Check necessary to ensure that session had not been ended
         var sessInfo = req.session;
 
@@ -19,7 +20,13 @@ function saveSession() {
         }
         
         delete sessInfo.user;
-        session.updateSession (req.sessionId, sessInfo, function () {/* Nothing */});
+        session.updateSession (req.sessionId, sessInfo, function (err) {
+            if(err) {
+                return logger.error('Error saving session', req.sessionId);
+            }
+            
+            logger.debug('Session saved', req.sessionId);
+        });
     }
 }
 
@@ -41,6 +48,7 @@ function getUser() {
     
     if(!req.isLoggedIn()) {
         // Not logged in...
+        logger.debug('session.getUser:', 'Not logged in');
         return null;
     }
     
@@ -52,10 +60,12 @@ function getUser() {
  * @param {function} callback
  */
 function endSession(callback) {
+    logger.debug('Logout requested');
     var req = this;
 
     if(!req.sessionId) {
-        // Not really on any session
+        // Not really in any session
+        logger.debug('Logout:', 'No session detected');
         return callback(null);
     }
 
@@ -71,8 +81,8 @@ function endSession(callback) {
  * @returns {undefined}
  */
 function requireLogin(callback) {
+    logger.debug('Login required');
     var req = this;
-
     var user = this.getUser();
 
     if(!user) {
@@ -93,10 +103,11 @@ module.exports = {
         request = req;
         
         var sessionId = (req.query && req.query.authToken) || (req.cookies && req.cookies.sid);
-        console.log(sessionId);
+        logger.debug('Provided Session ID:', sessionId);
         
         if(!sessionId) {
             // No session tokens
+            logger.debug('No session ID provided');
             return next();
         }
         
@@ -111,10 +122,12 @@ module.exports = {
                     // No session or session error
                     // Ignore for now
                     // TODO: examine the error and decide whether to ignore or throw an HTTP 500
+                    logger.error('Session error:', err);
                     return next();
                 }
 
                 // Session found...
+                logger.debug('Session found:', session);
                 var user = new User.User(session.userId);
                 
                 user.on('error', function (err) {

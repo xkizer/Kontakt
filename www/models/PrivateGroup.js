@@ -39,9 +39,7 @@ function groupProto (groupInfo) {
         shareGroup: function (sharingSettings, callback) {
             // sharingSettings would contain the person to share with, the information
             // to share and those not to share, and every other settings.
-        },
-        
-        
+        }
     };
 }
 
